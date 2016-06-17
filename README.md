@@ -1,5 +1,9 @@
 # *This plugin is clone from https://github.com/altsol/redmine_mattermost.git*
 
+##  Difference
+
+Append "@author @assigned_to @watcher1 @watcher2 ...." prefix the issue.
+
 
 # Mattermost chat plugin for Redmine
 
