@@ -10,7 +10,13 @@ class MattermostListener < Redmine::Hook::Listener
 		return unless channel and url
 		return if issue.is_private?
 
-		msg = "[#{escape issue.project}] #{escape issue.author} created <#{object_url issue}|#{escape issue}>#{mentions issue.description}"
+        msg = "@#{issue.author.login} @#{issue.author.assigned_to}"
+
+        issue.watchers.each do |watcher|
+            msg += " @#{watcher.user.login}"
+        end
+
+		msg += "[#{escape issue.project}] #{escape issue.author} created <#{object_url issue}|#{escape issue}>#{mentions issue.description}"
 
 		attachment = {}
 		attachment[:text] = escape issue.description if issue.description
@@ -47,7 +53,13 @@ class MattermostListener < Redmine::Hook::Listener
 		return unless channel and url and Setting.plugin_redmine_mattermost[:post_updates] == '1'
 		return if issue.is_private?
 
-		msg = "[#{escape issue.project}] #{escape journal.user.to_s} updated <#{object_url issue}|#{escape issue}>#{mentions journal.notes}"
+        msg = "@#{issue.author.login} @#{issue.author.assigned_to}"
+
+        issue.watchers.each do |watcher|
+            msg += " @#{watcher.user.login}"
+        end
+
+		msg += "[Redmine][#{escape issue.project}] #{escape journal.user.to_s} updated <#{object_url issue}|#{escape issue}>#{mentions journal.notes}"
 
 		attachment = {}
 		attachment[:text] = escape journal.notes if journal.notes
