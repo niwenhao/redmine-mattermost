@@ -1,3 +1,5 @@
+# *This plugin is clone from https://github.com/altsol/redmine_mattermost.git*
+
 # Mattermost chat plugin for Redmine
 
 This plugin posts updates to issues in your Redmine installation to a Mattermost
