@@ -10,11 +10,7 @@ class MattermostListener < Redmine::Hook::Listener
 		return unless channel and url
 		return if issue.is_private?
 
-        msg = "@#{issue.author.login} @#{issue.author.assigned_to}"
-
-        issue.watchers.each do |watcher|
-            msg += " @#{watcher.user.login}"
-        end
+        msg = create_msg_to(issue)
 
 		msg += "[#{escape issue.project}] #{escape issue.author} created <#{object_url issue}|#{escape issue}>#{mentions issue.description}"
 
@@ -43,6 +39,21 @@ class MattermostListener < Redmine::Hook::Listener
 		speak msg, channel, attachment, url
 	end
 
+    def create_msg_to(issue)
+        userlist = [issue.author, issue.assigned_to]
+
+        issue.watchers.each do |watcher|
+            userlist << watcher.user
+        end
+
+        prefix = ""
+        userlist.each do |user|
+            prefix += "@#{mmname_for_user(user)} "
+        end
+
+        prefix
+    end
+
 	def redmine_mattermost_issues_edit_after_save(context={})
 		issue = context[:issue]
 		journal = context[:journal]
@@ -53,11 +64,7 @@ class MattermostListener < Redmine::Hook::Listener
 		return unless channel and url and Setting.plugin_redmine_mattermost[:post_updates] == '1'
 		return if issue.is_private?
 
-        msg = "@#{issue.author.login} @#{issue.author.assigned_to}"
-
-        issue.watchers.each do |watcher|
-            msg += " @#{watcher.user.login}"
-        end
+        msg = create_msg_to(issue)
 
 		msg += "[Redmine][#{escape issue.project}] #{escape journal.user.to_s} updated <#{object_url issue}|#{escape issue}>#{mentions journal.notes}"
 
@@ -196,6 +203,21 @@ private
 			Setting.plugin_redmine_mattermost[:mattermost_url],
 		].find{|v| v.present?}
 	end
+
+    def mmname_for_user(user)
+        return nil if user.blank?
+
+        cf = UserCustomField.find_by_name("Mattermost Name")
+
+        mmname = issue.custom_value_for(cf).value rescue nil
+
+        unless mmname then
+            mmname = user.login
+        end
+
+        mmname
+    end
+
 
 	def channel_for_project(proj)
 		return nil if proj.blank?
