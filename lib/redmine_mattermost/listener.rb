@@ -207,9 +207,11 @@ private
     def mmname_for_user(user)
         return nil if user.blank?
 
+byebug
+
         cf = UserCustomField.find_by_name("Mattermost Name")
 
-        mmname = issue.custom_value_for(cf).value rescue nil
+        mmname = user.custom_value_for(cf).value rescue nil
 
         unless mmname then
             mmname = user.login
